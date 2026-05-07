@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batalha de Naves</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-header">
+        <img src=".\logo.png" alt="Capa da Marca" class="brand-cover">
+        <h1>Batalha de Naves 🏆</h1>
+        <div id="status-competicao" class="status inativa hidden">Competição Fechada</div>
+    </header>
+
+    <section id="login-screen">
+        <div class="login-box">
+            <h2>Bem-vindo à Batalha!</h2>
+            <p>Faça login para votar ou postar sua nave.</p>
+            
+            <button class="btn-google" onclick="loginGoogle()">
+                🌐 Entrar com o Google
+            </button>
+
+            <hr class="divisor">
+
+            <div class="admin-login-area">
+                <p class="admin-title">Acesso Restrito (Admin)</p>
+                <input type="text" id="admin-user" placeholder="Usuário">
+                <input type="password" id="admin-pass" placeholder="Senha">
+                <button class="btn-admin" onclick="loginAdmin()">Entrar no Painel</button>
+            </div>
+        </div>
+    </section>
+
+    <div id="app-screen" class="hidden">
+        
+        <button class="btn-logout" onclick="logout()">Sair da Conta</button>
+
+        <section id="admin-panel" class="admin-panel hidden">
+    <h3>Controle da Competição</h3>
+    <button id="btn-iniciar" onclick="toggleCompeticao()">Iniciar Competição</button>
+    
+    <button onclick="limparFeed()" style="background-color: #ff8c00; margin-top: 10px;">
+        ⚠️ Limpar Todo o Feed
+    </button>
+</section>
+</section>
+
+        <main id="feed-carros">
+            </main>
+
+        <nav id="bottom-bar" class="bottom-bar hidden">
+            <div id="ui-seguidor" class="hidden">
+                <div id="file-name-carro" class="file-name">Nenhuma foto selecionada</div>
+                <div class="post-controls">
+                    <label for="foto-upload" class="upload-icon">📷</label>
+                    <input type="file" id="foto-upload" accept="image/*" hidden>
+                    <input type="text" id="insta-user" placeholder="Seu @ do insta">
+                    <button onclick="postarCarro()" class="btn-enviar">🚀</button>
+                </div>
+            </div>
+
+            <div id="ui-admin" class="hidden">
+                <div id="file-name-aviso" class="file-name">Imagem do aviso (opcional)</div>
+                <div class="post-controls">
+                    <label for="admin-img-upload" class="upload-icon" style="color: #4cff4c;">📢</label>
+                    <input type="file" id="admin-img-upload" accept="image/*" hidden>
+                    <input type="text" id="admin-msg" placeholder="Escrever aviso ou regra...">
+                    <button onclick="postarAviso()" class="btn-enviar" style="background-color: #28a745;">✅</button>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div id="custom-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 id="modal-title">Aviso</h3>
+            <p id="modal-message">Mensagem aqui</p>
+            <div class="modal-buttons">
+                <button id="btn-modal-cancel" class="btn-cancelar hidden">Cancelar</button>
+                <button id="btn-modal-ok" class="btn-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
