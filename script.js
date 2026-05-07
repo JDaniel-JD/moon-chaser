@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDoc, setDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 // Removido o import chato do firebase-storage!
 
 // ⚠️ 1. COLOQUE SUAS CHAVES DO FIREBASE AQUI ⚠️
@@ -207,20 +207,35 @@ window.darLike = async (idPostagem, currentLikes) => {
     if (!competicaoAtiva) return mostrarAlerta("Atenção", "A competição já foi encerrada!");
     if (usuarioAtual.role === 'admin') return mostrarAlerta("Aviso", "O painel de Admin não vota!");
 
-    const tempoAtual = Date.now();
-    const umaHoraMs = 60 * 60 * 1000;
-    const tempoPassado = tempoAtual - (usuarioAtual.ultimoVoto || 0);
-
-    if (tempoPassado < umaHoraMs) {
-        const minRestantes = Math.ceil((umaHoraMs - tempoPassado) / (60 * 1000));
-        return mostrarAlerta("Calma piloto!", `Aguarde mais ${minRestantes} minuto(s) para votar novamente.`);
-    }
+    mostrarAlerta("Processando...", "Validando o seu voto..."); // Feedback pro usuário não clicar duas vezes rápido
 
     try {
+        // 1. Vai no banco de dados ver o histórico desse usuário específico
+        const userRef = doc(db, "usuarios", usuarioAtual.uid);
+        const userSnap = await getDoc(userRef);
+        
+        let ultimoVotoBD = 0;
+        if (userSnap.exists()) {
+            ultimoVotoBD = userSnap.data().ultimoVoto || 0;
+        }
+
+        // 2. Calcula a trava de 1 Hora
+        const tempoAtual = Date.now();
+        const umaHoraMs = 60 * 60 * 1000;
+        const tempoPassado = tempoAtual - ultimoVotoBD;
+
+        if (tempoPassado < umaHoraMs) {
+            const minRestantes = Math.ceil((umaHoraMs - tempoPassado) / (60 * 1000));
+            return mostrarAlerta("Calma piloto!", `Você já votou! Aguarde mais ${minRestantes} minuto(s) para votar novamente.`);
+        }
+
+        // 3. Tudo certo! Registra o like no carro...
         const postRef = doc(db, "postagens", idPostagem);
         await updateDoc(postRef, { likes: currentLikes + 1 });
 
-        usuarioAtual.ultimoVoto = tempoAtual;
+        // 4. E carimba o horário do voto no perfil do usuário lá no Firebase! (Trava definitiva)
+        await setDoc(userRef, { ultimoVoto: tempoAtual }, { merge: true });
+
         mostrarAlerta("Voto Registrado 🔥", "Seu voto fortaleceu o projeto!");
     } catch (error) {
         mostrarAlerta("Erro", "Falha ao registrar voto: " + error.message);
